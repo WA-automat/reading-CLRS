@@ -1,103 +1,78 @@
-# 斐波那契堆
+#pragma once
 
-斐波那契堆是一系列具有最小堆序的有根树的集合。每一棵树均遵循最小堆属性；每个节点的关键字大于或等于它的父节点关键字。
+#include<iostream>
+#include<vector>
 
-其结构如下图所示：
+using namespace std;
 
-<img src="斐波那契堆(第十九章)/斐波那契堆.png" style="zoom:38%;" />
-
-## 斐波那契堆的结构说明
-
-1. 所有树的根都连接在一起，以便更快地访问；
-2. 父节点的子节点通过如下所示的循环双向链表相互连接。
-
-使用循环双向链表有两个主要优点：
-
-1. 从树中删除一个节点需要 O(1) 时间；
-2. 两个这样的列表的连接需要 O(1) 时间。
-
-<img src="斐波那契堆(第十九章)/斐波那契堆结构.png" style="zoom:38%;" />
-
-斐波那契堆的具有可合并堆的操作，并且合并操作是摊还$O(1)$的（即斐波那契堆的一些操作可以在常数摊还时间内完成）
-
-## 可合并堆的操作
-
-1. $make$_$heap()$：创建和返回一个新的不含任何元素的堆；
-2. $insert(H，x)$：将一个已填入关键字的元素$x$插入堆$H$中；
-3. $minimum(H)$：返回一个指向堆$H$中最小关键字元素的指针；
-4. $extract$_$min(H)$：从堆中删除最小关键字的元素，并返回一个指向该元素的指针；
-5. $union(H_1,H_2)$：创建并返回一个包含堆$H_1$和$H_2$中所有元素的新堆，并销毁堆$H_1$和$H_2$。
-
-除了上述操作，斐波那契堆还支持如下两种操作：
-
-1. $decrease$_$key(H，x，k)$：将堆$H$中元素$x$的关键字赋予新值$k$；
-2. $delete(H，x)$：从堆$H$中删除元素$x$。
-
-## 斐波那契堆节点定义
-
-```c++
+/// <summary>
+/// 쳲������ѽڵ�
+/// </summary>
+/// <typeparam name="K">��������</typeparam>
+/// <typeparam name="V">ֵ������</typeparam>
 template<typename K, typename V>
 class FibNode {
 
-	// 公有成员
+	// ���г�Ա
 public:
 
-	// 键值对类型
+	// ��ֵ������
 	using Pair = pair<K, V>;
 
-	// 数据域
+	// ������
 	Pair kv;
 
-	// mark == true 当且仅当某个结点成为某个节点的子结点后还失去了某儿子结点
+	// mark == true ���ҽ���ĳ������Ϊĳ���ڵ���ӽ���ʧȥ��ĳ���ӽ��
 	bool mark;
-	// 孩子结点个数
+	// ���ӽ�����
 	int degree;
 
-	// 指针域
+	// ָ����
 	FibNode<K, V>* left, * right;
 	FibNode<K, V>* child, * parent;
 
-	// 构造函数
+	// ���캯��
 	FibNode(const K& key, const V& val)
 		:kv(make_pair(key, val)), mark(false), degree(0),
 		left(this), right(this), 
 		child(nullptr), parent(nullptr) {}
 	FibNode() :FibNode(K(), V()) {}
 
-	// 析构函数
+	// ��������
 	~FibNode() = default;
 
 };
-```
 
-## 斐波那契堆完整实现
-
-```c++
+/// <summary>
+/// 쳲�������
+/// </summary>
+/// <typeparam name="K">��������</typeparam>
+/// <typeparam name="V">ֵ������</typeparam>
 template<typename K, typename V>
 class FibHeap {
 
-	// 公有成员
+	// ���г�Ա
 public:
 
-	// 键值对类型
+	// ��ֵ������
 	using Pair = pair<K, V>;
 
-	// 指针类型
+	// ָ������
 	using pointer = FibNode<K, V>*;
 
-	// 构造函数
+	// ���캯��
 	FibHeap() : size(0), min(nullptr) {}
 
-	// 析构函数
+	// ��������
 	~FibHeap() = default;
 
-	// 插入一个元素
+	// ����һ��Ԫ��
 	void insert(const K& key, const V& val) {
 
-		// 新建一个节点
+		// �½�һ���ڵ�
 		pointer p = new FibNode<K, V>(key, val);
 
-		// 加入链表中
+		// ����������
 		listAdd(min, p);
 		if (min->kv.first > key) {
 			min = p;
@@ -105,20 +80,20 @@ public:
 		++size;
 	}
 
-	// 删除并返回最小节点
+	// ɾ����������С�ڵ�
 	Pair extractMin(void) {
 
-		// 默认的一个键值对
+		// Ĭ�ϵ�һ����ֵ��
 		Pair ret = make_pair(K(), V());
 
-		// 最小节点
+		// ��С�ڵ�
 		pointer p = min;
 
-		// 最小值存在时才进入
-		// 最小节点不存在时返回默认键值对
+		// ��Сֵ����ʱ�Ž���
+		// ��С�ڵ㲻����ʱ����Ĭ�ϼ�ֵ��
 		if (p) {
 
-			// 更改键值对
+			// ���ļ�ֵ��
 			ret = p->kv;
 
 			if (p->child) {
@@ -154,17 +129,17 @@ public:
 		return ret;
 	}
 
-	// 删除一个节点
+	// ɾ��һ���ڵ�
 	void remove(const K& key) {
 
-		// 查找到当前结点
+		// ���ҵ���ǰ���
 		pointer p = search(min, key);
 
-		// 若查找不到
+		// �����Ҳ���
 		if (p == nullptr) return;
 
-		// 这里其实应该是K这个类型的最小值
-		// 但由于是不定的，所以这里暂时用默认值代替
+		// ������ʵӦ����K������͵���Сֵ
+		// �������ǲ����ģ�����������ʱ��Ĭ��ֵ����
 		decreaseKey(p, K());
 		extractMin();
 
@@ -172,14 +147,14 @@ public:
 
 	static FibHeap heapUnion(FibHeap& a, FibHeap& b) {
 
-		// 若其中一个不存在，则返回另一个
+		// ������һ�������ڣ��򷵻���һ��
 		if (a.min == nullptr) return b;
 		if (b.min == nullptr) return a;
 
-		// 都存在则合并
+		// ��������ϲ�
 		a.listUnion(a.min, b.min);
 
-		// 找到当前最小值
+		// �ҵ���ǰ��Сֵ
 		if (a.min->kv.first > b.min->kv.first) {
 			a.min = b.min;
 		}
@@ -189,27 +164,27 @@ public:
 		return a;
 	}
 
-	// 私有成员
+	// ˽�г�Ա
 private:
 
-	// 结点个数
+	// ������
 	int size;
 
-	// 最小元素指针
+	// ��СԪ��ָ��
 	pointer min;
 
-	// 一些辅助函数
-	// 循环链表添加一个节点
+	// һЩ��������
+	// ѭ����������һ���ڵ�
 	void listAdd(pointer& r, pointer& p) {
 
-		// 当链表为空时
+		// ������Ϊ��ʱ
 		if (r == nullptr) {
 			r = p;
 			r->left = r;
 			r->right = r;
 		}
 
-		// 当链表不为空时
+		// ��������Ϊ��ʱ
 		else {
 			pointer x = r;
 			p->right = x->right;
@@ -220,16 +195,16 @@ private:
 
 	}
 
-	// 循环链表删除一个节点
+	// ѭ������ɾ��һ���ڵ�
 	void listDelete(pointer p) {
 		p->left->right = p->right;
 		p->right->left = p->left;
 	}
 
-	// 循环链表合并
+	// ѭ�������ϲ�
 	void listUnion(pointer x, pointer y) {
 
-		// 当x为空链表
+		// ��xΪ������
 		if (x == nullptr) x = y;
 		else {
 
@@ -243,12 +218,12 @@ private:
 
 	}
 
-	// 最大度数
+	// ������
 	int Dn(void) { 
 		return log2(size) + 1; 
 	}
 
-	// 将y变为x的孩子
+	// ��y��Ϊx�ĺ���
 	void heapLink(pointer y, pointer x) {
 
 		listDelete(y);
@@ -258,8 +233,8 @@ private:
 
 	}
 
-	// 将多个树链接成一棵树
-	// 数组a中存储多个树根
+	// ����������ӳ�һ����
+	// ����a�д洢�������
 	void consolidate(void) {
 
 		vector<pointer> a(Dn(), nullptr);
@@ -292,7 +267,7 @@ private:
 		delete sentry;
 	}
 
-	// 将x变为其中一个根节点树
+	// ��x��Ϊ����һ�����ڵ���
 	void cut(pointer x, pointer y) {
 
 		listDelete(x);
@@ -303,12 +278,12 @@ private:
 
 	}
 
-	// 递归的切断
+	// �ݹ���ж�
 	void cascadingCut(pointer y) {
 		
 		pointer z = y->parent;
 		
-		// 当y不为根节点时
+		// ��y��Ϊ���ڵ�ʱ
 		if (z) {
 
 			if (y->mark == false) y->mark = true;
@@ -323,10 +298,10 @@ private:
 
 	}
 
-	// 查找辅助函数
+	// ���Ҹ�������
 	pointer search(pointer r, const K& key) {
 		
-		// 当节点为空
+		// ���ڵ�Ϊ��
 		if (r == nullptr) return r;
 
 		pointer x = r, y;
@@ -348,10 +323,10 @@ private:
 
 	}
 
-	// 改变当前键
+	// �ı䵱ǰ��
 	void decreaseKey(pointer x, const K& key) {
 
-		// 当新键大于当前键时，直接返回
+		// ���¼����ڵ�ǰ��ʱ��ֱ�ӷ���
 		if (key >= x->kv.first) return;
 
 		x->kv.first = key;
@@ -366,5 +341,4 @@ private:
 	}
 
 };
-```
 
